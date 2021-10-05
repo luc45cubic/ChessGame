@@ -16,12 +16,13 @@ public class Board : MonoBehaviour
     public GameObject Board_obj;
 
     public List<GameObject> Pieces = new List<GameObject>();
+    
 
     private string[] FILES = {"a", "b", "c", "d", "e", "f", "g", "h"};
 
     void CreateBoard()
     {
-
+        
         int m = 0;
         int n = 0;
         for (int file = 0; file < 8; file++)
@@ -36,6 +37,8 @@ public class Board : MonoBehaviour
                 clone.name = FILES[file] + (rank + 1).ToString();
 
                 clone.transform.parent = Board_obj.transform;
+                clone.AddComponent<BoxCollider2D>();
+
 
 
                 if (isLightSquare)
@@ -48,13 +51,13 @@ public class Board : MonoBehaviour
                 }
 
                 //setup pieces
+                //PREDELAT!!!
                 
                 if (rank == 1)
                 {
-                    var piece = Instantiate(Pieces[11]);
-                    piece.transform.localScale = new Vector2(0.25f, 0.25f);
-                    piece.transform.position = new Vector2(-2.5f + file, -3.5f + rank);
-                    piece.name = Pieces[11].name + "(" + clone.name + ")";
+                    CreatePiece(clone, file, rank, 11);
+                    
+
                 }
 
                 if (rank == 0)
@@ -62,30 +65,20 @@ public class Board : MonoBehaviour
 
                     if (file < 5)
                     {
-                        var piece = Instantiate(Pieces[6 + file]);
-                        piece.transform.localScale = new Vector2(0.25f, 0.25f);
-                        piece.transform.position = new Vector2(-2.5f + file, -3.5f + rank);
-                        piece.name = Pieces[6 + file].name;
-                        piece.transform.parent = clone.transform;
+                        CreatePiece(clone, file, rank, 6+file);
+                        
                     }
                     else
                     {
-
-                        var piece = Instantiate(Pieces[8 - m]);
-                        piece.transform.localScale = new Vector2(0.25f, 0.25f);
-                        piece.transform.position = new Vector2(-2.5f + file, -3.5f + rank);
-                        piece.name = Pieces[8 - m].name;
-                        piece.transform.parent = clone.transform;
-
+                        CreatePiece(clone, file, rank, 8-m);
+                        
                         m++;
                     }
                 }
                 if (rank == 6)
                 {
-                    var piece = Instantiate(Pieces[5]);
-                    piece.transform.localScale = new Vector2(0.25f, 0.25f);
-                    piece.transform.position = new Vector2(-2.5f + file, -3.5f + rank);
-                    piece.name = Pieces[5].name + "(" + clone.name + ")";
+                    CreatePiece(clone, file, rank, 5);
+                   
                 }
 
                 if (rank == 7)
@@ -93,21 +86,13 @@ public class Board : MonoBehaviour
 
                     if (file < 5)
                     {
-                        var piece = Instantiate(Pieces[0 + file]);
-                        piece.transform.localScale = new Vector2(0.25f, 0.25f);
-                        piece.transform.position = new Vector2(-2.5f + file, -3.5f + rank);
-                        piece.name = Pieces[0 + file].name;
-                        piece.transform.parent = clone.transform;
+                        CreatePiece(clone, file, rank, 0+file);
+                        
                     }
                     else
                     {
-
-                        var piece = Instantiate(Pieces[2 - n]);
-                        piece.transform.localScale = new Vector2(0.25f, 0.25f);
-                        piece.transform.position = new Vector2(-2.5f + file, -3.5f + rank);
-                        piece.name = Pieces[2 - n].name;
-                        piece.transform.parent = clone.transform;
-
+                        CreatePiece(clone, file, rank, 2-n);
+                        
                         n++;
                     }
                 }
@@ -118,14 +103,55 @@ public class Board : MonoBehaviour
         }
         
     }
+    void CreatePiece(GameObject clone, int file, int rank, int pieceNumber)
+    {
+        var piece = Instantiate(Pieces[pieceNumber]);
+        piece.transform.localScale = new Vector2(0.25f, 0.25f);
+        piece.transform.position = new Vector2(-2.5f + file, -3.5f + rank);
+        piece.name = Pieces[pieceNumber].name + "(" + clone.name + ")";
+        piece.transform.parent = clone.transform;
+        piece.AddComponent<BoxCollider2D>();
+        if(piece.name.Contains("Rook"))
+        {
+            piece.AddComponent<RookMove>().piecePlace = piece.transform;
+
+        }
+        if(piece.name.Contains("Pawn"))
+        {
+            piece.AddComponent<PawnMove>().piecePlace = piece.transform;
+            piece.GetComponent<PawnMove>().Pawn = piece;
+
+        }
+        if (piece.name.Contains("Bishop"))
+        {
+            piece.AddComponent<BishopMove>().piecePlace = piece.transform;
+
+        }
+        if (piece.name.Contains("King"))
+        {
+            piece.AddComponent<KingMove>().piecePlace = piece.transform;
+
+        }
+        if (piece.name.Contains("Knight"))
+        {
+            piece.AddComponent<KnightMove>().piecePlace = piece.transform;
+
+        }
+        if (piece.name.Contains("Queen"))
+        {
+            piece.AddComponent<QueenMove>().piecePlace = piece.transform;
+
+        }
+
+    }
+
     
 
     // Start is called before the first frame update
     void Start()
     {
         CreateBoard();
-        //Board_obj.transform.localScale = new Vector2(2f, 1.15f);
-        //Board_obj.transform.localPosition = new Vector2(-1, -0.5f);
+        
     }
 
     // Update is called once per frame
