@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 4588373c1382ca14ab6c1584b5e0228b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - square: {instanceID: 0}
+  - blackMat: {instanceID: 0}
+  - whiteMat: {instanceID: 0}
+  - lightRed: {fileID: 2100000, guid: 3206d1415397ac64589f8f21f325e5dd, type: 2}
+  - green: {instanceID: 0}
+  - Board_obj: {instanceID: 0}
+  - piecePlace: {instanceID: 0}
+  - Piece: {instanceID: 0}
+  - lightred: {fileID: 2100000, guid: b18e6040a6db5fc4ca3785e4a980fdf3, type: 2}
+  - board_obj: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,274 @@
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+namespace Chess
+{
+    public class Pieces : MonoBehaviour
+    {
+        #region variables
+        public Transform piecePlace;
+
+        public GameObject board_obj;
+        public GameObject Piece;
+
+        private Vector2 initialPosition;
+        private Vector2 mousePosition;
+
+
+        private float deltaX, deltaY;
+
+        private int possibleSquares = 2;
+
+        public Material lightred;
+
+        private bool onMove;
+
+        public bool isBlackOnMove;
+        private List<Vector2> WhitePOS = new List<Vector2>();
+        private List<Vector2> BlackPOS = new List<Vector2>();
+
+        private List<GameObject> WhitePIECES = new List<GameObject>();
+        private List<GameObject> BlackPIECES = new List<GameObject>();
+
+        public List<Vector2> squares_pos = new List<Vector2>();
+        private List<GameObject> squares = new List<GameObject>();
+        private List<Material> squares_mat = new List<Material>();
+
+        private List<Vector2> AttPiecesPos = new List<Vector2>();
+        private List<Vector2> DefPiecesPos = new List<Vector2>();
+
+        private List<GameObject> DefPieces = new List<GameObject>();
+        private List<GameObject> AttPieces = new List<GameObject>();
+
+
+        private readonly int[] Pos = { -2, 2 };
+        private readonly int[] PosTwo = { -1, 1, };
+
+        #endregion
+        void Start()
+        {
+
+            initialPosition = transform.position;
+            ImportantVariables();
+
+
+
+        }
+
+
+
+        private void Update()
+        {
+            onMove = Piece.name.Contains("White") ? !isBlackOnMove
+                && Piece.name.Contains("White") : isBlackOnMove && Piece.name.Contains("Black"); //zjisti kdo je na tahu
+            AttPiecesPos = Piece.name.Contains("White") ? WhitePOS : BlackPOS;
+            AttPieces = Piece.name.Contains("White") ? WhitePIECES : BlackPIECES;
+            DefPiecesPos = Piece.name.Contains("White") ? BlackPOS : WhitePOS;
+            DefPieces = Piece.name.Contains("Black") ? WhitePIECES : BlackPIECES;
+
+            isBlackOnMove = board_obj.GetComponent<Board>().IsBlackOnMove;
+
+            if (Input.GetMouseButtonDown(0)) {
+                if (!(AttPiecesPos.Contains(new Vector2(Mathf.Floor(Camera.main.ScreenToWorldPoint(Input.mousePosition).x) + 0.5f, Mathf.Floor(Camera.main.ScreenToWorldPoint(Input.mousePosition).y) + 0.5f))))
+                    PieceSelectionChanged();
+                Debug.Log("Ahoj");
+            }
+        }
+
+
+        private void ImportantVariables()
+        {
+
+            WhitePOS = board_obj.GetComponent<Board>().WhitePos;
+            BlackPOS = board_obj.GetComponent<Board>().BlackPos;
+
+            WhitePIECES = board_obj.GetComponent<Board>().WhitePieces;
+            BlackPIECES = board_obj.GetComponent<Board>().BlackPieces;
+
+            squares_pos = board_obj.GetComponent<Board>().Squares_pos;
+            squares = board_obj.GetComponent<Board>().Squares;
+            squares_mat = board_obj.GetComponent<Board>().Squares_mat;
+            lightred = board_obj.GetComponent<Board>().lightRed;
+        }
+
+
+        private void OnMouseDown()
+        {
+
+            PieceSelectionChanged();
+            if (onMove)
+            {
+
+                deltaX = Camera.main.ScreenToWorldPoint(Input.mousePosition).x - transform.position.x;
+                deltaY = Camera.main.ScreenToWorldPoint(Input.mousePosition).y - transform.position.y;
+                Debug.Log(WhitePOS.Count());
+                
+                Debug.Log(new Vector2(Mathf.Floor(Camera.main.ScreenToWorldPoint(Input.mousePosition).x) + 0.5f, Mathf.Floor(Camera.main.ScreenToWorldPoint(Input.mousePosition).y) + 0.5f));
+                if (WhitePOS.Contains(new Vector2(Mathf.Floor(Camera.main.ScreenToWorldPoint(Input.mousePosition).x) + 0.5f, Mathf.Floor(Camera.main.ScreenToWorldPoint(Input.mousePosition).y) + 0.5f)))
+                    LegalMoves();
+
+            }
+
+
+        }
+        private void OnMouseDrag()
+        {
+            if (onMove)
+            {
+                mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                transform.position = new Vector2(mousePosition.x - deltaX, mousePosition.y - deltaY);
+            }
+
+        }
+
+        private void OnMouseUp()
+        {
+
+            if (!(Mathf.Floor(mousePosition.x) < -3.5 || Mathf.Floor(mousePosition.y) < -4 || Mathf.Floor(mousePosition.x) > 4.5 || Mathf.Floor(mousePosition.y) > 3.5))
+            {
+                if (onMove)
+                {
+                    if (PieceSelection(piecePlace.position))
+                        PieceChanges(AttPiecesPos, AttPieces, DefPieces, DefPiecesPos);
+
+                    else
+                        transform.position = new Vector2(initialPosition.x, initialPosition.y);
+
+                }
+                
+            }
+
+            else
+            {
+                transform.position = new Vector2(initialPosition.x, initialPosition.y);
+            }
+
+        }
+
+        private void LegalMoves()
+        {
+
+            foreach (Vector2 square in squares_pos)
+            {
+                if (PieceSelection(square))
+                    ShowPossibleMoves(square);
+                
+            }
+        }
+
+        private bool PieceSelection(Vector2 location) //zjisti jaka figura je vybrana a vrati jeji mozne tahy
+        {
+            
+
+
+            if (Piece.name.Contains("Knight"))
+            {
+                return Pos.Contains((int)(Mathf.Floor(location.x) - Mathf.Floor(initialPosition.x))) && PosTwo.Contains((int)(Mathf.Floor(location.y) - Mathf.Floor(initialPosition.y))) || PosTwo.Contains((int)(Mathf.Floor(location.x) - Mathf.Floor(initialPosition.x))) && Pos.Contains((int)(Mathf.Floor(location.y) - Mathf.Floor(initialPosition.y)));
+
+            }
+            if (Piece.name.Contains("King"))
+            {
+                int possibleSquares = 1;
+
+                return Mathf.Abs(Mathf.Floor(location.x) - Mathf.Floor(initialPosition.x)) <= possibleSquares && Mathf.Abs(Mathf.Floor(location.y) - Mathf.Floor(initialPosition.y)) <= possibleSquares;
+                
+            }
+            if (Piece.name.Contains("Queen"))
+            {
+                return Mathf.Floor(location.x) == Mathf.Floor(initialPosition.x) || Mathf.Floor(location.y) == Mathf.Floor(initialPosition.y) || Mathf.Abs(Mathf.Floor(location.x) - Mathf.Floor(initialPosition.x)) == Mathf.Abs(Mathf.Floor(location.y) - Mathf.Floor(initialPosition.y));
+                
+
+            }
+            if (Piece.name.Contains("White Pawn"))
+            {
+                return Mathf.Floor(location.x) + 0.5f == initialPosition.x && Mathf.Floor(location.y) > initialPosition.y && Mathf.Floor(location.y) < initialPosition.y + possibleSquares;
+                
+
+            }
+            if (Piece.name.Contains("Black Pawn"))
+            {
+                return Mathf.Floor(location.x) + 0.5f == initialPosition.x && Mathf.Floor(location.y) < initialPosition.y && Mathf.Floor(location.y) > Mathf.Floor(initialPosition.y) - (possibleSquares + 0.5);
+                
+
+            }
+            if (Piece.name.Contains("Bishop"))
+            {
+                return Mathf.Abs(Mathf.Floor(location.x) - Mathf.Floor(initialPosition.x)) == Mathf.Abs(Mathf.Floor(location.y) - Mathf.Floor(initialPosition.y));
+                
+
+            }
+            if (Piece.name.Contains("Rook"))
+            {
+                return Mathf.Floor(location.x) == Mathf.Floor(initialPosition.x) && Mathf.Floor(location.y) != initialPosition.y || Mathf.Floor(location.x) != initialPosition.x && Mathf.Floor(location.y) == Mathf.Floor(initialPosition.y);
+                
+
+            }
+
+
+            return false;
+
+        }
+
+        private void PieceChanges(List<Vector2> AttPiecesPos, List<GameObject> AttPieces, List<GameObject> DefPieces, List<Vector2> DefPiecesPos)
+        {
+            if (!AttPiecesPos.Contains(new Vector2(Mathf.Floor(piecePlace.position.x) + 0.5f, (Mathf.Floor(piecePlace.position.y) + 0.5f))))
+            {
+                PieceSelectionChanged();
+
+                transform.position = new Vector2(Mathf.Floor(piecePlace.position.x) + 0.5f, Mathf.Floor(piecePlace.position.y) + 0.5f);
+                AttPiecesPos[AttPiecesPos.FindIndex(ind => ind.Equals(new Vector2(initialPosition.x, initialPosition.y)))] = new Vector2((Mathf.Floor(piecePlace.position.x) + 0.5f), (Mathf.Floor(piecePlace.position.y) + 0.5f));
+                AttPieces[AttPiecesPos.FindIndex(ind => ind.Equals(new Vector2(piecePlace.position.x, piecePlace.position.y)))].transform.parent = squares[squares_pos.FindIndex(ind => ind.Equals(new Vector2(Mathf.Floor(piecePlace.position.x) + 0.5f, Mathf.Floor(piecePlace.position.y) + 0.5f)))].transform;
+
+                
+                initialPosition = new Vector2(Mathf.Floor(piecePlace.position.x) + 0.5f, Mathf.Floor(piecePlace.position.y) + 0.5f);
+
+                board_obj.GetComponent<Board>().IsBlackOnMove = !isBlackOnMove;
+
+
+                PieceDestroy(DefPieces, DefPiecesPos);
+
+
+                if (Piece.name.Contains("Pawn"))
+                    Piece.GetComponent<Pieces>().possibleSquares = 1;
+                
+            }
+            else
+            {
+                transform.position = new Vector2(initialPosition.x, initialPosition.y);
+
+            }
+        }
+
+        private void PieceDestroy(List<GameObject> DefPieces, List<Vector2> DefPiecesPos) //vyhodi figuru soupere
+        {
+            if (DefPiecesPos.Contains(new Vector2(Mathf.Floor(piecePlace.position.x) + 0.5f, Mathf.Floor(piecePlace.position.y) + 0.5f)))
+            {
+
+                Destroy(DefPieces[DefPiecesPos.FindIndex(ind => ind.Equals(new Vector2((Mathf.Floor(piecePlace.position.x) + 0.5f), (Mathf.Floor(piecePlace.position.y) + 0.5f))))]);
+                DefPieces.RemoveAt(DefPiecesPos.FindIndex(ind => ind.Equals(new Vector2((Mathf.Floor(piecePlace.position.x) + 0.5f), (Mathf.Floor(piecePlace.position.y) + 0.5f)))));
+                DefPiecesPos.RemoveAt(DefPiecesPos.FindIndex(ind => ind.Equals(new Vector2((Mathf.Floor(piecePlace.position.x) + 0.5f), (Mathf.Floor(piecePlace.position.y) + 0.5f)))));
+
+            }
+        }
+
+        private void ShowPossibleMoves(Vector2 squareXY) //oznaci mozne tahy cervene
+        {
+            if (!AttPiecesPos.Contains(squareXY))
+            {
+                squares[squares_pos.FindIndex(ind => ind.Equals(new Vector2((Mathf.Floor(squareXY.x) + 0.5f), (Mathf.Floor(squareXY.y) + 0.5f))))].GetComponent<SpriteRenderer>().material = lightred;
+            }
+        }
+
+        private void PieceSelectionChanged() //vymaze vsechny oznacene tahy
+        {
+            int elm = 0;
+            foreach (Material square_mat in squares_mat)
+            {
+                squares[squares_pos.FindIndex(ind => ind.Equals(new Vector2((Mathf.Floor(squares_pos[elm].x) + 0.5f), (Mathf.Floor(squares_pos[elm].y) + 0.5f))))].GetComponent<SpriteRenderer>().material = square_mat;
+                elm++;
+            }
+        }
+
+    }
+}
